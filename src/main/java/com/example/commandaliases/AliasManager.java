@@ -90,7 +90,7 @@ public final class AliasManager {
 
     public static AliasEntry find(String name) {
         for (AliasEntry e : ALIASES) {
-            if (e.enabled && e.name.equals(name)) {
+            if (e.enabled && e.name.equalsIgnoreCase(name)) {
                 return e;
             }
         }
