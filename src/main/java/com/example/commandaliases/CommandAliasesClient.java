@@ -23,8 +23,8 @@ public class CommandAliasesClient implements ClientModInitializer {
         // Shows up in Options > Controls > Key Binds under "Command Aliases".
         KeyMapping.Category category =
                 KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
-        openKey = KeyMappingHelper.registerKeyMapping(
-                new KeyMapping("key.commandaliases.open", InputConstants.Type.KEYSYM, InputConstants.KEY_K, category));
+         openKey = KeyMappingHelper.registerKeyMapping(
+                new KeyMapping("key.commandaliases.open", InputConstants.KEY_K, category));
 
         ClientTickEvents.END_CLIENT_TICK.register(mc -> {
             while (openKey.consumeClick()) {
