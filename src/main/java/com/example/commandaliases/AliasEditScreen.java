@@ -74,7 +74,7 @@ public class AliasEditScreen extends Screen {
             return;
         }
         for (AliasEntry other : AliasManager.all()) {
-            if (other != editing && other.name.equals(name)) {
+          if (other != editing && other.name.equalsIgnoreCase(name)) {
                 error = Component.literal("You already have a /" + name + " command.");
                 return;
             }
