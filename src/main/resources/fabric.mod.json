@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "commandaliases",
+  "version": "${version}",
+  "name": "Command Aliases",
+  "description": "Create your own short commands (e.g. /s -> /gamemode survival) from an in-game menu. Saved between sessions.",
+  "authors": [],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.example.commandaliases.CommandAliasesClient"]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
