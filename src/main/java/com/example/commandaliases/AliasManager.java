@@ -99,7 +99,6 @@ public final class AliasManager {
             } catch (Exception ignored) {
             }
         }
-        sort();
     }
 
     public static void sort() {

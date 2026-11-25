@@ -83,7 +83,6 @@ public class AliasEditScreen extends Screen {
             editing.name = name;
             editing.command = cmd;
         }
-        AliasManager.sort();
         AliasManager.save();
         Ui.open(parent);
     }
