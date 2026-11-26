@@ -59,7 +59,7 @@ public class AutomationEditScreen extends Screen {
             return;
         }
         if (editing == null) {
-            ProfileManager.active().automations.add(new AutomationEntry(trigger(), script, true));
+            MenuState.viewed().automations.add(new AutomationEntry(trigger(), script, true));
         } else {
             editing.trigger = trigger();
             editing.command = script;

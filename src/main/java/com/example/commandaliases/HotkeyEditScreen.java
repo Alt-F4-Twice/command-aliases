@@ -87,7 +87,7 @@ public class HotkeyEditScreen extends Screen {
             error = Component.literal("Add at least one command for it to run.");
             return;
         }
-        for (HotkeyEntry other : HotkeyManager.all()) {
+        for (HotkeyEntry other : MenuState.viewed().hotkeys) {
             if (other != editing && other.key == key && other.mods == mods) {
                 error = Component.literal(KeyNames.combo(mods, key, keyName) + " is already used by another hotkey.");
                 return;
@@ -95,7 +95,7 @@ public class HotkeyEditScreen extends Screen {
         }
 
         if (editing == null) {
-            HotkeyManager.all().add(new HotkeyEntry(key, keyName, mods, script, true));
+            MenuState.viewed().hotkeys.add(new HotkeyEntry(key, keyName, mods, script, true));
         } else {
             editing.key = key;
             editing.keyName = keyName;

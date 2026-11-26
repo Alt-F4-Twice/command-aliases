@@ -67,7 +67,7 @@ public class AliasEditScreen extends Screen {
             error = Component.literal("Add at least one command for it to run.");
             return;
         }
-        for (AliasEntry other : AliasManager.all()) {
+        for (AliasEntry other : MenuState.viewed().aliases) {
             if (other != editing && other.name.equalsIgnoreCase(name)) {
                 error = Component.literal("You already have a " + name + " command.");
                 return;
@@ -75,7 +75,7 @@ public class AliasEditScreen extends Screen {
         }
 
         if (editing == null) {
-            AliasManager.all().add(new AliasEntry(name, script, true));
+            MenuState.viewed().aliases.add(new AliasEntry(name, script, true));
         } else {
             editing.name = name;
             editing.command = script;

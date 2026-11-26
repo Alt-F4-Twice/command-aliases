@@ -53,6 +53,15 @@ public final class ProfileManager {
         return store.profiles.get(0);
     }
 
+    public static Profile byId(String id) {
+        for (Profile p : store.profiles) {
+            if (p.id.equals(id)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
     public static void setActive(Profile p) {
         store.active = p.id;
         save();

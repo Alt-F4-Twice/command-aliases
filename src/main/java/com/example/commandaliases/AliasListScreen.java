@@ -55,7 +55,7 @@ public class AliasListScreen extends Screen {
     }
 
     private int currentSize() {
-        Profile p = ProfileManager.active();
+        Profile p = MenuState.viewed();
         return tab == 0 ? p.aliases.size() : tab == 1 ? p.hotkeys.size() : p.automations.size();
     }
 
@@ -65,7 +65,7 @@ public class AliasListScreen extends Screen {
     }
 
     private void moveCurrent(int from, int to) {
-        Profile p = ProfileManager.active();
+        Profile p = MenuState.viewed();
         if (tab == 0) {
             move(p.aliases, from, to);
         } else if (tab == 1) {
@@ -78,7 +78,7 @@ public class AliasListScreen extends Screen {
     @Override
     protected void init() {
         rows.clear();
-        Profile profile = ProfileManager.active();
+        Profile profile = MenuState.viewed();
         int left = this.width / 2 - PANEL_W / 2;
 
         // Tabs (the current one is greyed out)
@@ -317,13 +317,16 @@ public class AliasListScreen extends Screen {
 
         super.extractRenderState(g, mouseX, mouseY, partialTick);
         int left = this.width / 2 - PANEL_W / 2;
-        Profile profile = ProfileManager.active();
+        Profile profile = MenuState.viewed();
 
         // Accent line under the tabs, which profile is on, and what this tab is for
         Look.line(g, left, 31, left + PANEL_W, Look.GOLD);
         Icons.draw(g, profile.icon, left, 36, 8);
-        g.text(this.font, Component.literal("Profile: " + Look.fit(this.font, profile.name, 200)),
-                left + 12, 36, Look.GOLD);
+        String profileText = "Profile: " + Look.fit(this.font, profile.name, 150);
+        g.text(this.font, Component.literal(profileText), left + 12, 36, Look.GOLD);
+        boolean isOn = profile == ProfileManager.active();
+        g.text(this.font, Component.literal(isOn ? "(ON)" : "(OFF - not running)"),
+                left + 12 + this.font.width(profileText) + 6, 36, isOn ? Look.GREEN : Look.RED);
         String about = tab == 0
                 ? "Type a short command (like /s) and it runs a longer one for you."
                 : tab == 1
