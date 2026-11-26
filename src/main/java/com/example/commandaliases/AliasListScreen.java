@@ -11,23 +11,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Main menu with two tabs: Quick Commands and Hotkeys.
+ * The menu for the profile that is on, with three tabs: Commands, Hotkeys and Automations.
  * Press and hold on a row, then drag it up or down to change the order.
+ * It remembers the tab and page until you leave the world.
  */
 public class AliasListScreen extends Screen {
-    private static final int ROW_TOP = 40;
+    private static final int ROW_TOP = 62;
     private static final int ROW_H = 24;
     private static final int PANEL_W = 340;
     private static final int SLOT_W = 190;
 
-    /** One list row's text: number, trigger (gold/aqua) -> command (white). */
+    /** One list row's text: number, trigger (gold/aqua/green) -> what it runs (white). */
     private record Row(int index, int x, int y, String trigger, String command, boolean enabled, int triggerColor) {
     }
 
     private final Screen parent;
     private final List<Row> rows = new ArrayList<>();
-    private int tab = 0; // 0 = Quick Commands, 1 = Hotkeys
-    private int page = 0;
+    private int tab = MenuState.tab; // 0 = Commands, 1 = Hotkeys, 2 = Automations
+    private int page = MenuState.page;
     private int pages = 1;
     private int perPage = 1;
     private int pageStart = 0;
@@ -54,7 +55,8 @@ public class AliasListScreen extends Screen {
     }
 
     private int currentSize() {
-        return tab == 0 ? AliasManager.all().size() : HotkeyManager.all().size();
+        Profile p = ProfileManager.active();
+        return tab == 0 ? p.aliases.size() : tab == 1 ? p.hotkeys.size() : p.automations.size();
     }
 
     private static <T> void move(List<T> list, int from, int to) {
@@ -63,40 +65,42 @@ public class AliasListScreen extends Screen {
     }
 
     private void moveCurrent(int from, int to) {
+        Profile p = ProfileManager.active();
         if (tab == 0) {
-            move(AliasManager.all(), from, to);
+            move(p.aliases, from, to);
+        } else if (tab == 1) {
+            move(p.hotkeys, from, to);
         } else {
-            move(HotkeyManager.all(), from, to);
-        }
-    }
-
-    private void saveCurrent() {
-        if (tab == 0) {
-            AliasManager.save();
-        } else {
-            HotkeyManager.save();
+            move(p.automations, from, to);
         }
     }
 
     @Override
     protected void init() {
         rows.clear();
+        Profile profile = ProfileManager.active();
         int left = this.width / 2 - PANEL_W / 2;
 
         // Tabs (the current one is greyed out)
-        Button quick = Button.builder(Component.literal("Quick Commands (" + AliasManager.all().size() + ")"),
-                b -> switchTab(0)).bounds(left, 8, 168, 20).build();
-        quick.active = tab != 0;
-        this.addRenderableWidget(quick);
-        Button hot = Button.builder(Component.literal("Hotkeys (" + HotkeyManager.all().size() + ")"),
-                b -> switchTab(1)).bounds(left + 172, 8, 168, 20).build();
-        hot.active = tab != 1;
-        this.addRenderableWidget(hot);
+        Button t0 = Button.builder(Component.literal("Commands (" + profile.aliases.size() + ")"),
+                b -> switchTab(0)).bounds(left, 8, 110, 20).build();
+        t0.active = tab != 0;
+        this.addRenderableWidget(t0);
+        Button t1 = Button.builder(Component.literal("Hotkeys (" + profile.hotkeys.size() + ")"),
+                b -> switchTab(1)).bounds(left + 115, 8, 110, 20).build();
+        t1.active = tab != 1;
+        this.addRenderableWidget(t1);
+        Button t2 = Button.builder(Component.literal("Automations (" + profile.automations.size() + ")"),
+                b -> switchTab(2)).bounds(left + 230, 8, 110, 20).build();
+        t2.active = tab != 2;
+        this.addRenderableWidget(t2);
 
         int count = currentSize();
         perPage = Math.max(1, (this.height - ROW_TOP - 64) / ROW_H);
         pages = Math.max(1, (count + perPage - 1) / perPage);
         page = Math.min(Math.max(page, 0), pages - 1);
+        MenuState.tab = tab;   // remembered until you leave the world
+        MenuState.page = page;
 
         pageStart = page * perPage;
         int end = Math.min(count, pageStart + perPage);
@@ -105,41 +109,52 @@ public class AliasListScreen extends Screen {
         for (int i = pageStart; i < end; i++) {
             int y = ROW_TOP + (i - pageStart) * ROW_H;
             if (tab == 0) {
-                final AliasEntry e = AliasManager.all().get(i);
-                String out = e.command.startsWith("/") ? e.command : "/" + e.command;
-                addRow(left, y, i, e.enabled, e.name, out, Look.GOLD,
+                final AliasEntry e = profile.aliases.get(i);
+                addRow(left, y, i, e.enabled, e.name, summaryOf(e.command), Look.GOLD,
                         () -> {
                             e.enabled = !e.enabled;
-                            AliasManager.save();
+                            ProfileManager.save();
                         },
                         () -> Ui.open(new AliasEditScreen(this, e)),
                         e,
                         () -> {
-                            AliasManager.all().remove(e);
-                            AliasManager.save();
+                            profile.aliases.remove(e);
+                            ProfileManager.save();
                         });
-            } else {
-                final HotkeyEntry h = HotkeyManager.all().get(i);
-                String out = h.command.startsWith("/") || h.command.startsWith("!") || h.command.startsWith("?")
-                        ? h.command : "/" + h.command;
-                addRow(left, y, i, h.enabled, KeyNames.combo(h.mods, h.key, h.keyName), out, Look.AQUA,
+            } else if (tab == 1) {
+                final HotkeyEntry h = profile.hotkeys.get(i);
+                addRow(left, y, i, h.enabled, KeyNames.combo(h.mods, h.key, h.keyName), summaryOf(h.command),
+                        Look.AQUA,
                         () -> {
                             h.enabled = !h.enabled;
-                            HotkeyManager.save();
+                            ProfileManager.save();
                         },
                         () -> Ui.open(new HotkeyEditScreen(this, h)),
                         h,
                         () -> {
-                            HotkeyManager.all().remove(h);
-                            HotkeyManager.save();
+                            profile.hotkeys.remove(h);
+                            ProfileManager.save();
+                        });
+            } else {
+                final AutomationEntry a = profile.automations.get(i);
+                addRow(left, y, i, a.enabled, AutomationEntry.label(a.trigger), summaryOf(a.command),
+                        Look.GREEN,
+                        () -> {
+                            a.enabled = !a.enabled;
+                            ProfileManager.save();
+                        },
+                        () -> Ui.open(new AutomationEditScreen(this, a)),
+                        a,
+                        () -> {
+                            profile.automations.remove(a);
+                            ProfileManager.save();
                         });
             }
         }
 
-        // Re-read the files (useful if you edited the .json by hand)
+        // Re-read the file (useful if you edited the .json by hand)
         this.addRenderableWidget(Button.builder(Component.literal("Reload"), b -> {
-            AliasManager.load();
-            HotkeyManager.load();
+            ProfileManager.load();
             pendingRemove = null;
             dragIndex = -1;
             this.rebuildWidgets();
@@ -163,12 +178,28 @@ public class AliasListScreen extends Screen {
         this.addRenderableWidget(next);
 
         // Bottom buttons
-        this.addRenderableWidget(Button.builder(
-                Component.literal(tab == 0 ? "Add new command" : "Add new hotkey"),
-                b -> Ui.open(tab == 0 ? new AliasEditScreen(this, null) : new HotkeyEditScreen(this, null)))
-                .bounds(left, this.height - 28, 168, 20).build());
+        String addLabel = tab == 0 ? "Add new command" : tab == 1 ? "Add new hotkey" : "Add new automation";
+        this.addRenderableWidget(Button.builder(Component.literal(addLabel), b -> {
+            if (tab == 0) {
+                Ui.open(new AliasEditScreen(this, null));
+            } else if (tab == 1) {
+                Ui.open(new HotkeyEditScreen(this, null));
+            } else {
+                Ui.open(new AutomationEditScreen(this, null));
+            }
+        }).bounds(left, this.height - 28, 140, 20).build());
+        this.addRenderableWidget(Button.builder(Component.literal("Back"), b -> {
+            // back to the profile list (the menu forgets which profile you opened)
+            MenuState.reset();
+            Ui.open(new ProfileScreen(parent));
+        }).bounds(left + 144, this.height - 28, 96, 20).build());
         this.addRenderableWidget(Button.builder(Component.literal("Done"),
-                b -> this.onClose()).bounds(left + 172, this.height - 28, 168, 20).build());
+                b -> this.onClose()).bounds(left + 244, this.height - 28, 96, 20).build());
+    }
+
+    private static String summaryOf(String script) {
+        String s = Script.summary(script);
+        return s.isEmpty() ? script : s;
     }
 
     private void addRow(int left, int y, int index, boolean enabled, String trigger, String command,
@@ -197,17 +228,6 @@ public class AliasListScreen extends Screen {
                     }
                     this.rebuildWidgets();
                 }).bounds(left + 286, y, 54, 20).build());
-    }
-
-    private String fit(String s, int maxWidth) {
-        if (this.font.width(s) <= maxWidth) {
-            return s;
-        }
-        String ellipsis = "...";
-        while (!s.isEmpty() && this.font.width(s + ellipsis) > maxWidth) {
-            s = s.substring(0, s.length() - 1);
-        }
-        return s + ellipsis;
     }
 
     // ---------- drag to reorder ----------
@@ -246,7 +266,7 @@ public class AliasListScreen extends Screen {
     public boolean mouseReleased(MouseButtonEvent event) {
         if (dragIndex >= 0) {
             dragIndex = -1;
-            saveCurrent();
+            ProfileManager.save();
             this.rebuildWidgets();
             return true;
         }
@@ -254,7 +274,7 @@ public class AliasListScreen extends Screen {
     }
 
     /** Moves the dragged row to follow the mouse. Holding above/below the list steps it along and flips pages. */
-    private void updateDrag(int mx, int my) {
+    private void updateDrag(int my) {
         if (dragIndex < 0) {
             return;
         }
@@ -293,14 +313,26 @@ public class AliasListScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partialTick) {
         lastMouseX = mouseX;
         lastMouseY = mouseY;
-        updateDrag(mouseX, mouseY);
+        updateDrag(mouseY);
 
         super.extractRenderState(g, mouseX, mouseY, partialTick);
         int left = this.width / 2 - PANEL_W / 2;
+        Profile profile = ProfileManager.active();
 
-        // Frame around the list + accent line under the tabs
-        Look.box(g, left - 8, 33, left + PANEL_W + 8, this.height - 56, Look.BORDER);
+        // Accent line under the tabs, which profile is on, and what this tab is for
         Look.line(g, left, 31, left + PANEL_W, Look.GOLD);
+        Icons.draw(g, profile.icon, left, 36, 1);
+        g.text(this.font, Component.literal("Profile: " + Look.fit(this.font, profile.name, 200)),
+                left + 12, 36, Look.GOLD);
+        String about = tab == 0
+                ? "Type a short command (like /s) and it runs a longer one for you."
+                : tab == 1
+                ? "Press a key in game to run a command."
+                : "Runs commands for you automatically when something happens.";
+        g.text(this.font, Component.literal(about), left, 48, Look.GRAY);
+
+        // Frame around the list
+        Look.box(g, left - 8, 58, left + PANEL_W + 8, this.height - 56, Look.BORDER);
 
         for (Row r : rows) {
             boolean dragged = r.index() == dragIndex;
@@ -323,7 +355,7 @@ public class AliasListScreen extends Screen {
             g.text(this.font, Component.literal(num), tx, ty, Look.DIM);
             tx += this.font.width(num) + 5;
 
-            String trig = fit(r.trigger(), 80);
+            String trig = Look.fit(this.font, r.trigger(), 80);
             g.text(this.font, Component.literal(trig), tx, ty, r.enabled() ? r.triggerColor() : Look.DIM);
 
             int ax = tx + this.font.width(trig) + 4;
@@ -332,17 +364,18 @@ public class AliasListScreen extends Screen {
             int cx = ax + this.font.width("->") + 4;
             int room = r.x() + SLOT_W - 4 - cx;
             if (room > 8) {
-                g.text(this.font, Component.literal(fit(r.command(), room)), cx, ty,
+                g.text(this.font, Component.literal(Look.fit(this.font, r.command(), room)), cx, ty,
                         r.enabled() ? Look.WHITE : Look.DIM);
             }
         }
 
-        boolean empty = currentSize() == 0;
-        if (empty) {
+        if (currentSize() == 0) {
             String msg = tab == 0
-                    ? "No quick commands yet - click \"Add new command\""
-                    : "No hotkeys yet - click \"Add new hotkey\"";
-            g.centeredText(this.font, Component.literal(msg), this.width / 2, 64, Look.GRAY);
+                    ? "No commands yet - click \"Add new command\""
+                    : tab == 1
+                    ? "No hotkeys yet - click \"Add new hotkey\""
+                    : "No automations yet - click \"Add new automation\"";
+            g.centeredText(this.font, Component.literal(msg), this.width / 2, 86, Look.GRAY);
         }
         g.centeredText(this.font, Component.literal("Page " + (page + 1) + " / " + pages),
                 this.width / 2, this.height - 46, Look.GRAY);

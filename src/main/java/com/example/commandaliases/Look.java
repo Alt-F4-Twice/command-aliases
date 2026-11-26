@@ -1,5 +1,6 @@
 package com.example.commandaliases;
 
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 
 /** Colors and tiny drawing helpers so every screen looks the same. */
@@ -7,6 +8,7 @@ final class Look {
     static final int WHITE = 0xFFFFFFFF;
     static final int GOLD = 0xFFFFAA00;
     static final int AQUA = 0xFF55FFFF;
+    static final int GREEN = 0xFF55FF55;
     static final int GRAY = 0xFFAAAAAA;
     static final int DIM = 0xFF808080;
     static final int RED = 0xFFFF5555;
@@ -25,5 +27,17 @@ final class Look {
 
     static void line(GuiGraphicsExtractor g, int x1, int y, int x2, int color) {
         g.fill(x1, y, x2, y + 1, color);
+    }
+
+    /** Shortens text with "..." so it fits in maxWidth pixels. */
+    static String fit(Font font, String s, int maxWidth) {
+        if (font.width(s) <= maxWidth) {
+            return s;
+        }
+        String ellipsis = "...";
+        while (!s.isEmpty() && font.width(s + ellipsis) > maxWidth) {
+            s = s.substring(0, s.length() - 1);
+        }
+        return s + ellipsis;
     }
 }

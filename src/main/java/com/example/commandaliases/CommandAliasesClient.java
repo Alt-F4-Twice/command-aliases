@@ -18,8 +18,7 @@ public class CommandAliasesClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        AliasManager.init();
-        HotkeyManager.init();
+        ProfileManager.init();
 
         // Shows up in Options > Controls > Key Binds under "Command Aliases".
         KeyMapping.Category category =
@@ -34,54 +33,47 @@ public class CommandAliasesClient implements ClientModInitializer {
             // Wait until no screen is open (e.g. the chat box has closed after typing /aliases).
             if (openRequested && Ui.current() == null) {
                 openRequested = false;
-                Ui.open(new AliasListScreen(null));
+                Ui.open(MenuState.create());
             }
+            Automations.tick(mc);
             HotkeyManager.tick(mc);
-            AliasManager.tick(mc);
+            Runner.tick(mc);
         });
 
-        // Typing /aliases opens the menu and is not sent to the server.
+        // /s style quick commands (and /aliases). The typed command is cancelled and the real
+        // one is sent for you instead.
         ClientSendMessageEvents.ALLOW_COMMAND.register(command -> {
-            if (AliasManager.bypass) {
+            if (Runner.bypass) {
                 return true;
             }
-            if (command.strip().equalsIgnoreCase("aliases")) {
+            String c = command.strip();
+            if (c.equalsIgnoreCase("aliases")) {
                 openRequested = true;
                 return false;
             }
-            return true;
-        });
-
-        // /s style quick commands: swap for the real command before it is sent.
-        ClientSendMessageEvents.MODIFY_COMMAND.register(command -> {
-            if (AliasManager.bypass) {
-                return command;
+            List<Action> actions = AliasManager.expand("/" + c);
+            if (actions == null) {
+                return true;
             }
-            List<String> expanded = AliasManager.expand("/" + command);
-            if (expanded == null) {
-                return command;
-            }
-            if (expanded.size() > 1) {
-                AliasManager.queue(List.copyOf(expanded.subList(1, expanded.size())));
-            }
-            return expanded.get(0);
+            Runner.queue(actions);
+            return false;
         });
 
         // !s and ?s style quick commands: typed in chat, so we cancel the chat message
         // and run the real command instead. Chat that isn't one of your quick commands is untouched.
         ClientSendMessageEvents.ALLOW_CHAT.register(message -> {
-            if (AliasManager.bypass) {
+            if (Runner.bypass) {
                 return true;
             }
             String t = message.strip();
             if (t.isEmpty() || (t.charAt(0) != '!' && t.charAt(0) != '?')) {
                 return true;
             }
-            List<String> expanded = AliasManager.expand(t);
-            if (expanded == null) {
+            List<Action> actions = AliasManager.expand(t);
+            if (actions == null) {
                 return true;
             }
-            AliasManager.queue(expanded);
+            Runner.queue(actions);
             return false;
         });
     }

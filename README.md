@@ -1,23 +1,30 @@
 # Command Aliases (Fabric, Minecraft 26.3)
 
-Client-side mod. Two tabs in one menu:
+Client-side mod. Make your own short commands, hotkeys and automations from an in-game menu.
 
-**Quick Commands** - make your own short commands.
-- `/s` -> `/gamemode survival`. Not case sensitive (`/S`, `/GaMe` work).
+Open the menu with the **Command Aliases** keybind (default `K`, rebindable in Options > Controls) or type `/aliases`.
+
+## Profiles
+Pick a profile first. Only one is on at a time and each has its own commands, hotkeys and automations.
+Each profile has a small picture (grass block, bedrock, crafting table, command block, diamond, redstone, emerald, gold, TNT, chest).
+The menu remembers your tab and page until you leave the world or server.
+
+## Commands
+- `/s` -> `/gamemode survival`. Not case sensitive.
 - Prefixes: `/` (typed as a command), `!` and `?` (typed in chat), e.g. `!s` or `?s`.
 - Extra words go on the end (`/s Steve`) or where you put `{args}`.
+- Chain builder: add more commands, each with a wait of 0-5 seconds. (Under the hood it is just text: `/gamemode creative ; wait 2 ; /tp @s ~ 100 ~`.)
 
-**Hotkeys** - press a key in game to run a command.
-- Click the key button, press the key you want, then type the command (quick commands work too, e.g. `/s`).
-- Hold Ctrl / Shift / Alt while pressing for combos like `Ctrl+H`.
+## Hotkeys
+Click the key button, press a key (hold Ctrl / Shift / Alt for combos like `Ctrl+H`), then choose what it runs.
 
-Reorder: press and hold a row in the menu, then drag it up or down (hold above/below the list to move across pages).
+## Automations
+Run commands when you **join** a world or server, when you **die**, or when you **respawn**.
 
-Both: chain commands (up to 10 per shortcut) with `;` (`/heal ; /feed`), ON/OFF toggle, Edit, Remove (click twice).
+## Extras
+ON/OFF toggle, Edit, Remove (click twice), drag rows to reorder, **Reload** to re-read the file after editing it by hand.
 
-Open the menu with the **Command Aliases** keybind (default `K`, rebindable in Options > Controls) or by typing `/aliases`.
-Edited the .json by hand? Press **Reload** in the menu.
-Saved in `config/commandaliases/aliases.json` and `hotkeys.json`.
+Saved in `config/commandaliases/profiles.json`. Older `aliases.json` / `hotkeys.json` files are brought into a "Default" profile the first time.
 
 ## Licence
 All rights reserved (c) 2026 Max. See `LICENSE`.
