@@ -26,7 +26,7 @@ public class ProfileEditScreen extends Screen {
     protected void init() {
         String nameText = nameBox != null ? nameBox.getValue() : (editing != null ? editing.name : "");
         int left = this.width / 2 - 150;
-        top = Math.max(20, (this.height - 216) / 2);
+        top = Math.max(20, (this.height - 236) / 2);
 
         nameBox = new EditBox(this.font, left, top + 28, 300, 20, Component.literal("Profile name"));
         nameBox.setMaxLength(24);
@@ -39,15 +39,15 @@ public class ProfileEditScreen extends Screen {
         for (int i = 0; i < Icons.IDS.length; i++) {
             final String id = Icons.IDS[i];
             int bx = left + (i % 5) * 61;
-            int by = top + 72 + (i / 5) * 34;
+            int by = top + 72 + (i / 5) * 42;
             this.addRenderableWidget(Button.builder(Component.literal(""), b -> icon = id)
-                    .bounds(bx, by, 56, 30).build());
+                    .bounds(bx, by, 56, 38).build());
         }
 
         this.addRenderableWidget(Button.builder(Component.literal("Save"), b -> save())
-                .bounds(left, top + 182, 146, 20).build());
+                .bounds(left, top + 198, 146, 20).build());
         this.addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> this.onClose())
-                .bounds(left + 154, top + 182, 146, 20).build());
+                .bounds(left + 154, top + 198, 146, 20).build());
     }
 
     private void save() {
@@ -71,7 +71,7 @@ public class ProfileEditScreen extends Screen {
         super.extractRenderState(g, mouseX, mouseY, partialTick);
         int left = this.width / 2 - 150;
 
-        Look.box(g, left - 10, top - 14, left + 310, top + 214, Look.BORDER);
+        Look.box(g, left - 10, top - 14, left + 310, top + 226, Look.BORDER);
         g.centeredText(this.font, this.title, this.width / 2, top - 4, Look.GOLD);
         Look.line(g, left, top + 8, left + 300, Look.GOLD);
 
@@ -81,18 +81,18 @@ public class ProfileEditScreen extends Screen {
         for (int i = 0; i < Icons.IDS.length; i++) {
             String id = Icons.IDS[i];
             int bx = left + (i % 5) * 61;
-            int by = top + 72 + (i / 5) * 34;
-            Icons.draw(g, id, bx + 16, by + 3, 3); // 24x24 picture centred in the 56x30 button
+            int by = top + 72 + (i / 5) * 42;
+            Icons.draw(g, id, bx + 12, by + 3, 32); // 32x32 picture centred in the 56x38 button
             if (id.equals(icon)) {
-                Look.box(g, bx - 1, by - 1, bx + 57, by + 31, Look.GOLD);
+                Look.box(g, bx - 1, by - 1, bx + 57, by + 39, Look.GOLD);
             }
         }
 
         g.text(this.font, Component.literal("Tip: name it after what you do, like Building or PvP."),
-                left, top + 144, Look.DIM);
+                left, top + 160, Look.DIM);
         g.text(this.font, Component.literal("Each profile keeps its own commands, hotkeys and automations."),
-                left, top + 155, Look.DIM);
-        g.text(this.font, error, left, top + 168, Look.RED);
+                left, top + 171, Look.DIM);
+        g.text(this.font, error, left, top + 186, Look.RED);
     }
 
     @Override

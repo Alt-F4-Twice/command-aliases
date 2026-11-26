@@ -321,7 +321,7 @@ public class AliasListScreen extends Screen {
 
         // Accent line under the tabs, which profile is on, and what this tab is for
         Look.line(g, left, 31, left + PANEL_W, Look.GOLD);
-        Icons.draw(g, profile.icon, left, 36, 1);
+        Icons.draw(g, profile.icon, left, 36, 8);
         g.text(this.font, Component.literal("Profile: " + Look.fit(this.font, profile.name, 200)),
                 left + 12, 36, Look.GOLD);
         String about = tab == 0

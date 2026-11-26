@@ -117,7 +117,7 @@ public class ProfileScreen extends Screen {
             if (on) {
                 Look.box(g, r.x(), r.y(), r.x() + SLOT_W, r.y() + 26, Look.GOLD);
             }
-            Icons.draw(g, p.icon, r.x() + 5, r.y() + 5, 2);
+            Icons.draw(g, p.icon, r.x() + 5, r.y() + 5, 16);
 
             int tx = r.x() + 28;
             g.text(this.font, Component.literal(Look.fit(this.font, p.name, on ? 120 : 154)),

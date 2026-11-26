@@ -1,159 +1,97 @@
 package com.example.commandaliases;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 
 import java.util.HashMap;
 import java.util.Map;
 
-/** Little 8x8 pixel pictures for profiles, drawn with plain colored squares (no image files needed). */
+/**
+ * Pictures for profiles. Most of them are Minecraft's own textures (read from the game itself,
+ * nothing is copied into the mod). The command block is drawn from a 16x16 pixel map because
+ * its game texture is animated.
+ */
 final class Icons {
     static final String[] IDS = {
             "grass_block", "bedrock", "crafting_table", "command_block", "diamond",
-            "redstone", "emerald", "gold_ingot", "tnt", "chest"
+            "redstone", "emerald", "gold_ingot", "tnt", "diamond_ore"
     };
 
-    private record Icon(String[] rows, Map<Character, Integer> palette) {
-    }
-
-    private static final Map<String, Icon> ICONS = new HashMap<>();
-
-    private static void add(String id, String[] rows, String... palette) {
-        Map<Character, Integer> map = new HashMap<>();
-        for (String p : palette) {
-            map.put(p.charAt(0), 0xFF000000 | Integer.parseInt(p.substring(1), 16));
-        }
-        ICONS.put(id, new Icon(rows, map));
-    }
+    /** id -> texture path inside the game's resources. */
+    private static final Map<String, String> TEXTURES = new HashMap<>();
+    private static final Map<String, Identifier> CACHE = new HashMap<>();
 
     static {
-        add("grass_block", new String[]{
-                "GGGGGGGG",
-                "GgGGGgGG",
-                "GGgGGGgG",
-                "DGDDGDDG",
-                "DDdDDDdD",
-                "DDDDdDDD",
-                "dDDDDDdD",
-                "DDdDDDDD"},
-                "G5DA130", "g4A8A25", "D8B5A2B", "d6E4421");
+        TEXTURES.put("grass_block", "textures/block/grass_block_side.png");
+        TEXTURES.put("bedrock", "textures/block/bedrock.png");
+        TEXTURES.put("crafting_table", "textures/block/crafting_table_front.png");
+        TEXTURES.put("diamond", "textures/item/diamond.png");
+        TEXTURES.put("redstone", "textures/item/redstone.png");
+        TEXTURES.put("emerald", "textures/item/emerald.png");
+        TEXTURES.put("gold_ingot", "textures/item/gold_ingot.png");
+        TEXTURES.put("tnt", "textures/block/tnt_side.png");
+        TEXTURES.put("diamond_ore", "textures/block/diamond_ore.png");
+    }
 
-        add("bedrock", new String[]{
-                "abcbadba",
-                "cdabcabd",
-                "bacdbaac",
-                "dbacabcb",
-                "acbdbcda",
-                "bdcabdab",
-                "cabdcbad",
-                "bacbadcb"},
-                "a1E1E1E", "b3A3A3A", "c5A5A5A", "d777777");
+    // Command block, 16x16. K = dark edge, D = dark brown, W = white slash, L = light tan, O/o = orange.
+    private static final String[] COMMAND_BLOCK = {
+            "BBBBBBBBBBBBBBBB",
+            "BOOOOoOOOOOoOOOB",
+            "BOLLOOOOOOOOLLOB",
+            "BOLOOOOOOOOOOLOB",
+            "BOOOKKKKKKKKOOOB",
+            "BOOOKDDDDDWKOOOB",
+            "BOOOKDDDDWDKOOOB",
+            "BOOOKDDDWDDKOOOB",
+            "BOOOKDDWDDDKOOOB",
+            "BOOOKDWDDDDKOOOB",
+            "BOOOKWDDDDDKOOOB",
+            "BOOOKKKKKKKKOOOB",
+            "BOOoOOOOOOOOoOOB",
+            "BOLOOOOOOOOOOLOB",
+            "BOLLOOOOOOOOLLOB",
+            "BBBBBBBBBBBBBBBB"};
+    private static final Map<Character, Integer> COMMAND_PALETTE = new HashMap<>();
 
-        add("crafting_table", new String[]{
-                "DDDDDDDD",
-                "DPPDDPPD",
-                "DPTDDPRD",
-                "DDDDDDDD",
-                "DppppppD",
-                "DpDppDpD",
-                "DpDppDpD",
-                "DDDDDDDD"},
-                "D5B3E1E", "PB98B4F", "p9C7238", "T9A9A9A", "RB04030");
-
-        add("command_block", new String[]{
-                "BBBBBBBB",
-                "BOOOOOOB",
-                "BOOOOWOB",
-                "BOOOWOOB",
-                "BOOWOOoB",
-                "BOWOOOoB",
-                "BOOOOooB",
-                "BBBBBBBB"},
-                "B4A2A10", "OC8782A", "oA85E1C", "WFFF0D0");
-
-        add("diamond", new String[]{
-                "..kkkk..",
-                ".kwCCCk.",
-                "kwCCCCCk",
-                "kCCCCCck",
-                ".kCCCck.",
-                "..kCck..",
-                "...kck..",
-                "....k..."},
-                "k135E58", "C4AEDD9", "c2CB8A8", "wC8FFF6");
-
-        add("redstone", new String[]{
-                "........",
-                "..r.R...",
-                ".rRRhR..",
-                ".RhRRRr.",
-                "rRRRhRRr",
-                ".rRRRRr.",
-                "..rRRr..",
-                "...rr..."},
-                "rA01010", "RE02020", "hFF6060");
-
-        add("emerald", new String[]{
-                "..kkkk..",
-                ".kwEEEk.",
-                "kwEEEEEk",
-                "kEEEEEek",
-                ".kEEEek.",
-                "..kEek..",
-                "...kek..",
-                "....k..."},
-                "k0B4A1A", "E3FD35C", "e1E9E3A", "wC8FFD0");
-
-        add("gold_ingot", new String[]{
-                "........",
-                "..kkkkk.",
-                ".kwYYYYk",
-                "kYYYYYyk",
-                "kYYYYyyk",
-                ".kyyyyk.",
-                "..kkkk..",
-                "........"},
-                "k6B5410", "YF5D142", "yC9A227", "wFFF2A8");
-
-        add("tnt", new String[]{
-                "RrRRrRRr",
-                "RRrRRRrR",
-                "WWWWWWWW",
-                "WkWkWkWW",
-                "WWWWWWWW",
-                "RRrRRRrR",
-                "RrRRrRRr",
-                "rRRRRrRR"},
-                "RD03030", "rA02020", "WF0F0F0", "k222222");
-
-        add("chest", new String[]{
-                "DDDDDDDD",
-                "DBBBBBBD",
-                "DBBBBBBD",
-                "DDDYYDDD",
-                "DbbYYbbD",
-                "DbbbbbbD",
-                "DbbbbbbD",
-                "DDDDDDDD"},
-                "D3A2410", "B8A5A2A", "b6A4220", "YE0C040");
+    static {
+        COMMAND_PALETTE.put('B', 0xFF3A2410);
+        COMMAND_PALETTE.put('O', 0xFFC8782A);
+        COMMAND_PALETTE.put('o', 0xFFA85E1C);
+        COMMAND_PALETTE.put('L', 0xFFE8B070);
+        COMMAND_PALETTE.put('K', 0xFF2A1808);
+        COMMAND_PALETTE.put('D', 0xFF5A3418);
+        COMMAND_PALETTE.put('W', 0xFFFFF0D0);
     }
 
     private Icons() {
     }
 
-    /** Draws a picture; each of its 8x8 pixels becomes a square of {@code scale} screen pixels. */
-    static void draw(GuiGraphicsExtractor g, String id, int x, int y, int scale) {
-        Icon icon = ICONS.get(id);
-        if (icon == null) {
-            icon = ICONS.get(IDS[0]);
+    /** Draws a picture {@code size} pixels wide and tall (16, 32, ... look sharpest). */
+    static void draw(GuiGraphicsExtractor g, String id, int x, int y, int size) {
+        if ("command_block".equals(id)) {
+            drawCommandBlock(g, x, y, size);
+            return;
         }
-        for (int r = 0; r < icon.rows().length; r++) {
-            String row = icon.rows()[r];
-            for (int c = 0; c < row.length(); c++) {
-                Integer color = icon.palette().get(row.charAt(c));
+        String path = TEXTURES.get(id);
+        if (path == null) {
+            path = TEXTURES.get(IDS[0]); // unknown picture: show the grass block
+        }
+        Identifier texture = CACHE.computeIfAbsent(path, Identifier::withDefaultNamespace);
+        // size x size on screen, taken from the whole 16x16 texture
+        g.blit(RenderPipelines.GUI_TEXTURED, texture, x, y, 0, 0, size, size, 16, 16, 16, 16);
+    }
+
+    private static void drawCommandBlock(GuiGraphicsExtractor g, int x, int y, int size) {
+        for (int r = 0; r < 16; r++) {
+            String row = COMMAND_BLOCK[r];
+            for (int c = 0; c < 16; c++) {
+                Integer color = COMMAND_PALETTE.get(row.charAt(c));
                 if (color == null) {
-                    continue; // "." = see-through
+                    continue;
                 }
-                g.fill(x + c * scale, y + r * scale, x + (c + 1) * scale, y + (r + 1) * scale, color);
+                g.fill(x + c * size / 16, y + r * size / 16,
+                        x + (c + 1) * size / 16, y + (r + 1) * size / 16, color);
             }
         }
     }

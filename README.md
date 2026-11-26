@@ -6,7 +6,7 @@ Open the menu with the **Command Aliases** keybind (default `K`, rebindable in O
 
 ## Profiles
 Pick a profile first. Only one is on at a time and each has its own commands, hotkeys and automations.
-Each profile has a small picture (grass block, bedrock, crafting table, command block, diamond, redstone, emerald, gold, TNT, chest).
+Each profile has a small picture taken from Minecraft's own textures (grass block, bedrock, crafting table, command block, diamond, redstone, emerald, gold, TNT, diamond ore).
 The menu remembers your tab and page until you leave the world or server.
 
 ## Commands
